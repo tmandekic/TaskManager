@@ -11,4 +11,5 @@ Sample Blazor WebAssembly project providing task management:
 
 Created as a single page application, with [reusable task-component](Client/Components/TaskRowComponent.razor) for individual task management.
 
-
+![Task listing](Docs/taskMgmt%20listing.PNG)
+![Edit task](Docs/taskMgmt%20editTask.PNG)
