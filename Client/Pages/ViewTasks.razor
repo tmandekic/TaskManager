@@ -1,0 +1,124 @@
+﻿@page "/task/view"
+
+@using TaskManager.Shared
+@using TaskManager.Client.Components
+@using System.ComponentModel.DataAnnotations 
+
+@inject HttpClient Http
+
+
+<h1>Task list</h1>
+
+
+@if (tasks == null)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+    <EditForm EditContext="@editContext">
+        <ObjectGraphDataAnnotationsValidator />
+        <table class="table">
+            <thead>
+                <tr>
+                    <th></th>
+                    <th>Due by</th>
+                    <th>Task name</th>
+                    <th></th>
+                    <th>Status</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var t in tasks)
+                {
+                    <TaskRowComponent Task="t"
+                                      RowBackgroundStyle="@GetRowBackgroundStyle(t)"
+                                      DeleteTaskClicked="OnTaskDeleted"
+                                      EditTaskClicked="OnTaskEdit"
+                                      MarkAsCompleteClicked="OnTaskMarkedComplete"
+                                      SaveTaskClicked="OnTaskSaved" />
+                }
+            </tbody>
+        </table>
+        <div>
+            <div class="btn btn-link mx-3" @onclick="e => { AddTask(e);}"><i class="oi oi-plus mr-2"></i>Add Task</div>
+        </div>
+    </EditForm>
+}
+
+@code {
+
+    [ValidateComplexType]
+    private List<TaskItem> tasks { get; set; }
+
+
+    private EditContext editContext;
+    private bool validated;
+
+    private string GetRowBackgroundStyle(TaskItem t)
+    {
+        if (t.IsCompleted)
+        {
+            return "alert alert-success";
+        }
+        else if (t.DueBy > DateTime.MinValue && t.DueBy < DateTime.Now.Date)
+        {
+            return "alert alert-danger";
+        }
+        return string.Empty;
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        tasks = await Http.GetFromJsonAsync<List<TaskItem>>("Task");
+        if (tasks != null)
+        {
+            editContext = new(tasks);
+        }
+    }
+
+    protected void OnTaskEdit(TaskItem t)
+    {
+        // validate
+        validated = editContext.Validate();
+
+        if (validated)
+        {
+            t.IsEditing = true;
+            //StateHasChanged();
+        }
+    }
+
+    protected void OnTaskMarkedComplete(TaskItem t)
+    {
+        StateHasChanged();
+    }
+
+    protected void OnTaskSaved(TaskItem t)
+    {
+        // validate
+        validated = editContext.Validate();
+
+        if (validated)
+        {
+            t.IsEditing = false;
+            //StateHasChanged();
+        }
+    }
+
+    protected async Task OnTaskDeleted(TaskItem t)
+    {
+        // remove task from the array
+        tasks.Remove(t);
+        StateHasChanged();
+    }
+
+    protected void AddTask(EventArgs e)
+    {
+        TaskItem ti = new TaskItem();
+        ti.IsEditing = true;
+        tasks.Add(ti);
+        StateHasChanged();
+    }
+}

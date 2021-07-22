@@ -1,0 +1,88 @@
+﻿@page "/task/new"
+
+
+@using TaskManager.Shared 
+@using TaskManager.Client.Components
+
+ 
+@inject HttpClient Http
+
+
+<h1>Task list</h1>
+
+
+@if (tasks == null)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+    <form>
+        <table class="table">
+            <thead>
+                <tr>
+                    <th></th>
+                    <th>Due by</th>
+                    <th>Task name</th>
+                    <th></th>
+                    <th>Status</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var t in tasks)
+                {
+                    <TaskRowComponent Task="t" 
+                                          RowBackgroundStyle="@GetRowBackgroundStyle(t)"
+                                          DeleteTaskClicked="OnTaskDeleted"
+                                          EditTaskClicked="OnTaskEdit"
+                                          MarkAsCompleteClicked="OnTaskMarkedComplete"
+                                          SaveTaskClicked="OnTaskSaved"/>
+                }
+            </tbody>
+        </table>
+    </form>
+}
+
+@code {
+    private TaskItem[] tasks;
+
+    private string GetRowBackgroundStyle(TaskItem t)
+    {
+        if (t.IsCompleted)
+        {
+            return "alert alert-success";
+        }
+        else if (t.DueBy > DateTime.MinValue && t.DueBy < DateTime.Now.Date)
+        {
+            return "alert alert-danger";
+        }
+        return string.Empty;
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        tasks = await Http.GetFromJsonAsync<TaskItem[]>("Task");
+    }
+
+    protected void OnTaskEdit(TaskItem t)
+    {
+    }
+
+    protected void OnTaskMarkedComplete(TaskItem t)
+    {
+    }
+
+    protected void OnTaskSaved(TaskItem t)
+    {
+        // TODO: update task in array
+
+        t.IsEditing = false;
+    }
+
+    protected async Task OnTaskDeleted(TaskItem t)
+    {
+        // TODO: remove task from the array
+
+    }
+}
