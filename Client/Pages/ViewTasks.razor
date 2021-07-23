@@ -118,6 +118,7 @@ else
     {
         TaskItem ti = new TaskItem();
         ti.IsEditing = true;
+        ti.DueBy = DateTime.Now;
         tasks.Add(ti);
         StateHasChanged();
     }
